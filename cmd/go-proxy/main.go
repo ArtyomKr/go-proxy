@@ -1,14 +1,26 @@
 package main
 
 import (
+	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 )
 
 func main() {
-	targetURL, err := url.Parse("https://www.google.com")
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatal("Couldn't find env variables in .env file")
+	}
+
+	port := os.Getenv("PORT")
+	urlToProxy := os.Getenv("TARGET_URL")
+
+	log.Printf("Url %v", urlToProxy)
+
+	targetURL, err := url.Parse(urlToProxy)
 	if err != nil {
 		log.Fatal("Failed to parse url", err)
 	}
@@ -43,6 +55,6 @@ func main() {
 
 	http.HandleFunc("/", proxyHandler)
 
-	log.Println("Listing for requests at http://localhost:8000/")
-	log.Fatal(http.ListenAndServe(":8000", nil))
+	log.Println("Listing for requests at http://localhost" + ":" + port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
