@@ -31,7 +31,7 @@ func main() {
 	proxy := httputil.NewSingleHostReverseProxy(targetURL)
 
 	proxy.Transport = &http.Transport{
-		ProxyConnectHeader: http.Header{},
+		//ProxyConnectHeader: http.Header{},
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: false,
 		},
