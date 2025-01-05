@@ -53,10 +53,10 @@ jobs:
           script: |
             cd go-proxy
             chmod +x main
-            # sudo systemctl restart go-proxy
-            # if ! sudo systemctl is-active --quiet tgbot; then
-            #   echo "Service failed to start"
-            #   sudo systemctl status tgbot --no-pager
-            #   exit 1
-            # fi
-            # sudo systemctl status tgbot --no-pager
+            sudo systemctl restart goproxy
+            if ! sudo systemctl is-active --quiet goproxy; then
+              echo "Service failed to start"
+              sudo systemctl status goproxy --no-pager
+              exit 1
+            fi
+            sudo systemctl status goproxy --no-pager
