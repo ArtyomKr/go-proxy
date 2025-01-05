@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"github.com/joho/godotenv"
 	"log"
 	"net/http"
@@ -17,6 +18,8 @@ func main() {
 
 	port := os.Getenv("PORT")
 	urlToProxy := os.Getenv("TARGET_URL")
+	certFile := os.Getenv("CERT_FILE") // Path to SSL certificate
+	keyFile := os.Getenv("KEY_FILE")   // Path to SSL private key
 
 	log.Printf("Url %v", urlToProxy)
 
@@ -29,6 +32,9 @@ func main() {
 
 	proxy.Transport = &http.Transport{
 		ProxyConnectHeader: http.Header{},
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: false,
+		},
 	}
 
 	proxy.Director = func(req *http.Request) {
@@ -55,6 +61,6 @@ func main() {
 
 	http.HandleFunc("/", proxyHandler)
 
-	log.Println("Listing for requests at http://localhost" + ":" + port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Println("Listing for requests at https://localhost:" + port)
+	log.Fatal(http.ListenAndServeTLS(":"+port, certFile, keyFile, nil))
 }
