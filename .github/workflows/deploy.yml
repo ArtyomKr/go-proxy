@@ -1,0 +1,62 @@
+name: Build_&_deploy
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.23'
+
+    - name: Build
+      run: go build -ldflags="-w -s" ./cmd/go-proxy/main.go
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: app
+        path: main
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-22.04
+    environment: production
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: app
+
+      - name: Deploy to server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "main"
+          target: "go-proxy"
+          
+      - name: Execute binary
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd go-proxy
+            chmod +x main
+            # sudo systemctl restart go-proxy
+            # if ! sudo systemctl is-active --quiet tgbot; then
+            #   echo "Service failed to start"
+            #   sudo systemctl status tgbot --no-pager
+            #   exit 1
+            # fi
+            # sudo systemctl status tgbot --no-pager
